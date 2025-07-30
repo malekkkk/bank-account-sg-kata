@@ -1,9 +1,9 @@
 package malek.jerbi.bank.account.services;
 
 import malek.jerbi.bank.account.entities.BankAccountEntity;
-import malek.jerbi.bank.account.exceptions.AccountNotFoundException;
-import malek.jerbi.bank.account.exceptions.InsufficientFundException;
+import malek.jerbi.bank.account.exceptions.BankAccountException;
 import malek.jerbi.bank.account.repositories.BankAccountRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -33,7 +33,7 @@ public class BankAccountService {
     public String withdraw(int bankAccountId, float amount ) {
         BankAccountEntity bankAccount = this.getBankAccountById(bankAccountId);
         if (bankAccount.getBalance() < amount) {
-            throw new InsufficientFundException(bankAccount.getBalance());
+            throw new BankAccountException("Insufficient Fund Exception, current balance: " + bankAccount.getBalance());
         } else {
             bankAccount.setBalance(bankAccount.getBalance() - amount);
             String statement = LocalDate.now() + " | Withdraw | " + amount + " | Balance: " + bankAccount.getBalance();
@@ -52,7 +52,7 @@ public class BankAccountService {
         BankAccountEntity bankAccount = this.bankAccountRepository.findById(bankAccountId);
 
         if (isNull(bankAccount)) {
-            throw new AccountNotFoundException();
+            throw new BankAccountException("Account Not Found Exception", HttpStatus.NOT_FOUND);
         } else {
             return bankAccount;
         }

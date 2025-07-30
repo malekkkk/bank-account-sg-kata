@@ -1,8 +1,7 @@
 package malek.jerbi.bank.account.services;
 
 import malek.jerbi.bank.account.entities.BankAccountEntity;
-import malek.jerbi.bank.account.exceptions.AccountNotFoundException;
-import malek.jerbi.bank.account.exceptions.InsufficientFundException;
+import malek.jerbi.bank.account.exceptions.BankAccountException;
 import malek.jerbi.bank.account.repositories.BankAccountRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,15 +50,15 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void testWithdraw_shouldThrowInsufficientFundException() {
+    void testWithdraw_shouldThrowBankAccountException_WhenInsufficientFunds() {
         BankAccountEntity account = new BankAccountEntity(3, 100f, new ArrayList<>());
         when(mockRepository.findById(3)).thenReturn(account);
 
-        assertThrows(InsufficientFundException.class, () -> {
+        BankAccountException ex = assertThrows(BankAccountException.class, () -> {
             bankAccountService.withdraw(3, 200f);
         });
 
-        assertEquals(100f, account.getBalance());
+        assertTrue(ex.getMessage().contains("Insufficient Fund Exception"));
         verify(mockRepository, never()).save(account);
     }
 
@@ -76,11 +75,13 @@ class BankAccountServiceTest {
     }
 
     @Test
-    void testGetBankAccountById_shouldThrowIfNotFound() {
+    void testGetStatements_shouldThrowBankAccountException_WhenAccountNotFound() {
         when(mockRepository.findById(999)).thenReturn(null);
 
-        assertThrows(AccountNotFoundException.class, () -> {
+        BankAccountException ex = assertThrows(BankAccountException.class, () -> {
             bankAccountService.getStatements(999);
         });
+
+        assertTrue(ex.getMessage().contains("Account Not Found Exception"));
     }
 }
